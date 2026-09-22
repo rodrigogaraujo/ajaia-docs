@@ -346,3 +346,9 @@ Decisions by the lead, after ajaia-11's questions:
 - ? ajaia-11 finished qa-e2e-coverage planning: 12 requirements, 65 tasks, no apply. Planning only, documents what a full test suite would guarantee.
 - ? ajaia-f7 edited main for about 90 seconds before moving to the worktree, then reverted 8 files. That was the 500 on the local app. Lead verified main after the revert: no diff in src, prisma or package.json, tsc clean, 65 tests, login 200.
 - OK: ajaia-11 marked its role tests conditional on the stretch branch merging. It did not touch config.yaml or the archived spec. Right.
+
+## Shipped
+
+- OK: live at https://ajaia-docs-rodrigo.netlify.app. Lead checked: /login 200 with Alice, Bob, Carol; /api/documents without cookie is 401 JSON, not a redirect. The proxy exclusion works in production.
+- OK: repo private at https://github.com/rodrigogaraujo/ajaia-docs. Builder pushed and added the URL to README.
+- OK: Drive folder rebuilt in ~/Downloads/ajaia-submission: zip without .env, docs, diagrams, import samples.

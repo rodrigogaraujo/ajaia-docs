@@ -1,5 +1,8 @@
 # Submission
 
+Live: https://ajaia-docs-rodrigo.netlify.app
+Repository (private): https://github.com/rodrigogaraujo/ajaia-docs
+
 ## Included
 
 - Source code: this repository. Next.js 16, TypeScript, Tailwind, TipTap, Prisma 6, Supabase Postgres, Vitest, Playwright, Netlify.
