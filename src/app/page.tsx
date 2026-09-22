@@ -1,11 +1,12 @@
 import { requireUser } from "@/lib/auth";
 import { signOut } from "./login/actions";
+import { DocumentsDashboard } from "./documents-dashboard";
 
 export default async function HomePage() {
   const user = await requireUser();
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-12">
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-12">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Ajaia Docs</h1>
@@ -23,9 +24,7 @@ export default async function HomePage() {
         </form>
       </header>
 
-      <p className="text-sm opacity-70">
-        Documents arrive in the next change.
-      </p>
+      <DocumentsDashboard />
     </main>
   );
 }

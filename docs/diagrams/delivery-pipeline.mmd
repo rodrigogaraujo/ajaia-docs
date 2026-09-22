@@ -1,0 +1,11 @@
+flowchart TB
+    S[Spec prompt] --> O[OpenSpec propose]
+    O --> R{Review}
+    R -->|adjust| O
+    R -->|ok| I[Apply]
+    I --> C[tsc + Vitest + Playwright]
+    C -->|green| G[git commit on branch]
+    G --> M[merge to main]
+    M --> N[Netlify build<br/>prisma generate && next build]
+    N --> L[Live URL]
+    L --> Q[Smoke test: Alice → Bob → Carol]

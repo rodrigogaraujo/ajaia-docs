@@ -66,6 +66,101 @@ AI errors fixed by the AI itself:
 Blocked, not an AI error:
 - .env still has placeholders. `db push`, seed and the login flow are not tested yet.
 
-Note for spec 5:
-- Netlify needs `binaryTargets = ["native", "rhel-openssl-3.0.x"]` in schema.prisma.
-- Proxy redirects `/api/*` to /login too. API routes should answer 401 JSON instead. Watch in spec 2.
+### Netlify setup (my extra prompt, before archive)
+
+- OK: netlify.toml: `npx prisma generate && npm run build`, publish `.next`, Node 20.
+- OK: .nvmrc = 20. README rewritten with env vars, setup and scripts.
+- OK: AI checked Netlify's Next adapter source and confirmed Next 16 `proxy.ts` runs there.
+- OK: work committed on branch `setup-foundation`, not on main. Merge before deploy.
+- CHANGED by AI beyond my prompt: added `binaryTargets` for rhel-openssl-3.0.x. It read my note in this log. Correct, kept. Without it Netlify passes the build and dies at runtime.
+
+Blocked, my error not the AI's:
+- .env host still says `aws-0-REGION`. I did not replace the region.
+- My DB password has `@` and `+`. Must be percent-encoded in the URL.
+- Same two vars must also be set in Netlify UI.
+
+### Verified with a real database
+
+- OK: db push, seed twice, login flow tested over HTTP. All 24 tasks checked.
+- OK: I confirmed in Supabase (read-only MCP): 3 tables, 3 users, contentHtml is text, composite key on DocumentShare, cascade FK on documentId.
+- Note: Supabase shows RLS enabled on the tables. Prisma connects as postgres and bypasses it. Harmless here.
+
+Process mistake, mine:
+- I did not run `openspec:archive setup-foundation`. Archive folder is empty. Spec 2 was proposed on top of an unarchived spec 1. Must archive now.
+
+## 2. document-editing
+
+### Proposal review (before apply)
+
+Good, kept:
+- OK: 3 specs: document-access, document-api, document-workspace.
+- OK: proxy now skips `/api/*`. API answers 401 JSON. This was my note from spec 1.
+- OK: no `@tiptap/extension-underline`. TipTap 3 StarterKit already bundles it. Installing both throws a duplicate error. AI checked the installed package.
+- OK: StarterKit limited to H1, H2 and the toolbar set, so the sanitizer allowlist (p, br, strong, em, u, h1, h2, ul, ol, li) matches the editor exactly. One test sends every toolbar format and checks it survives.
+- OK: HTML storage decision written in design.md with the JSON alternative and why it was rejected.
+- OK: autosave: one save in flight, status comes from the last finished save, never optimistic.
+- OK: POST ignores any ownerId in the body. Owner comes from the cookie.
+
+Deviation from my prompt, my decision:
+- ? I wrote "404 when the doc does not exist, 403 when the user has no access". AI changed it: no access -> 404 too, so the API never reveals a document id exists. 403 only for a share recipient trying to delete. Good security reason. But my spec 3 scenario says "Carol gets 403". If I keep the AI's version, spec 3 must say 404.
+
+### Apply review
+
+Checked by me: `tsc` clean, `npm test` 25/25, all UI and API files read, Supabase clean (0 docs, 3 users).
+
+Good, kept:
+- OK: 30/30 tasks. API tested over HTTP, UI tested in real Chromium with Playwright.
+- OK: `Buffer.byteLength` only in server code. No client component imports it.
+- OK: 404 body is identical for missing and forbidden docs. Verified by the AI.
+- OK: editor loads content with `emitUpdate: false`, so opening a doc does not trigger a save.
+- OK: empty title restores the old one and saves nothing. Escape cancels rename.
+- OK: undo and redo disabled when nothing to undo. Buttons use `aria-pressed`.
+- OK: dashboard error state has Retry and is different from empty state.
+- OK: AI cleaned the 9 test documents from the database after testing.
+
+AI errors, all in its own test harness, not in the app:
+- Ctrl+A on macOS is not select-all. Fixed with Meta+A.
+- Home/End on macOS select the whole document. Fixed the helper.
+- Typing at 0ms delay dropped characters after a toolbar click. 30ms works. Not a user bug.
+- One assertion was always true because the poller captured nothing. Replaced with a direct read.
+
+Known limits, accepted:
+- Closing the tab during the 800ms debounce loses that edit. Design says so.
+- Last write wins between two editors. Real-time is a non-goal.
+- Editor shows "Owned by X". Spec 3 will replace it with the Owner / Shared by badge.
+
+### Addendum: Alice / Bob / Carol scenario (my extra prompt)
+
+- OK: new requirement "access boundary holds end to end" with 2 scenarios. Tested with 3 browser contexts. 31/31 tasks.
+- CHANGED by AI: my prompt said "Alice shares with Bob". There is no sharing UI yet, so the AI wrote the share as a GIVEN precondition and inserted it via SQL. Spec 3 must redo the scenario with Alice using the UI.
+- OK: I confirmed in Supabase: 1 doc, 1 share, 3 users. Left on purpose so "Shared with me" is visible for my manual test.
+
+AI errors this round:
+- Big one: Prisma said "Can't reach database server". AI blamed the Supabase pooler, then the Prisma engine. Both wrong. Real cause: its sandboxed shell blocked TCP from Node to Supabase. Proved it by running the same socket test unsandboxed. App was never broken. Cost a lot of time.
+- zsh does not split unquoted variables like bash. Three user ids became one argument, test got a bad cookie, AI first misread it as a dashboard bug. Third zsh issue this session.
+- Two more Playwright harness bugs (reading text while still loading, networkidle never settles with HMR). Not app bugs.
+
+Archived: spec 1 and spec 2 (openspec/changes/archive/). Main specs: 5 capabilities, 34 requirements.
+
+## 3. document-sharing
+
+### Proposal review (before apply)
+
+My decision, reversed on purpose:
+- CHANGED: I chose 403 for "no access" after all, not 404. The AI did not pick silently. It showed me the conflict with the archived spec and the trade-off, and I chose 403 because a person who got a link should be told "not yours", not "does not exist". Cost: document ids become guessable as real or not. Ids are cuids, so guessing is impractical. Written in design.md, marked BREAKING.
+
+Good, kept:
+- OK: no new capability. Sharing rules go into the existing document-access, document-api and document-workspace specs. "Who may share" and "who may delete" are the same question.
+- OK: duplicate share is rejected by the composite key, not by check-then-insert. No race. Maps to 409.
+- OK: email lookup trimmed and case-insensitive. Storage unchanged.
+- OK: share list readable by anyone with access, so Bob can see who else is in the doc.
+- OK: revoke by userId, grant by email. The dialog already holds ids.
+- OK: scenario "hiding a control is not the enforcement". Server refuses a direct request from Bob.
+- OK: scenario for losing access mid-session: Bob reloads and is told the doc is not his.
+- OK: loader must return found / missing / forbidden instead of null. One helper, so 403 and 404 cannot drift between routes.
+
+AI errors:
+- openspec validate rejected the first delta. AI renamed a scenario inside a MODIFIED block, which reads as a removed scenario. Restored the name, revalidated.
+
+Flagged by AI, my call:
+- Nothing committed since bbd7cc1. Branch `setup-foundation` now holds spec 2, both archives and all main specs. Commit before applying spec 3.

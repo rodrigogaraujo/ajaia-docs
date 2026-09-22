@@ -1,0 +1,33 @@
+flowchart LR
+    ME[Me]
+
+    subgraph BUILD[Builder session: Claude Code + OpenSpec]
+        direction TB
+        PR[propose] --> AP[apply] --> AR[archive]
+    end
+
+    subgraph REV[Reviewer session: Claude Code]
+        direction TB
+        RD[reads specs and code] --> LOG[AI_LOG.md]
+    end
+
+    subgraph VER[Verify after apply]
+        direction TB
+        T1[tsc]
+        T2[Vitest unit tests]
+        T3[Playwright e2e in Chromium]
+    end
+
+    subgraph MCP[MCP servers]
+        direction TB
+        SB[Supabase MCP<br/>tables, logs, advisors]
+        NF[Netlify MCP<br/>deploy, build logs, env vars]
+    end
+
+    ME -->|prompts, one spec at a time| BUILD
+    ME -->|decisions| REV
+    BUILD -->|milestone reports| REV
+    REV -->|findings, ready prompts| ME
+    BUILD --> VER
+    BUILD --> MCP
+    REV -.->|read only| MCP

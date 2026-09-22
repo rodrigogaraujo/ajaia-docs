@@ -1,0 +1,23 @@
+erDiagram
+    User ||--o{ Document : owns
+    User ||--o{ DocumentShare : receives
+    Document ||--o{ DocumentShare : "shared via (cascade delete)"
+
+    User {
+        string id PK
+        string name
+        string email UK
+    }
+    Document {
+        string id PK
+        string title
+        text contentHtml
+        string ownerId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+    DocumentShare {
+        string documentId PK, FK
+        string userId PK, FK
+        datetime createdAt
+    }

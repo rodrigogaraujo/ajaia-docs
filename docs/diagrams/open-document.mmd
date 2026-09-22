@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant B as Browser
+    participant P as proxy.ts
+    participant R as GET /api/documents/:id
+    participant A as canAccess (pure)
+    participant D as Postgres
+
+    B->>P: request with uid cookie
+    P->>R: pass (cookie present)
+    R->>D: load user, document, shares
+    R->>A: canAccess(userId, document, shares)
+    alt owner or shared
+        A-->>R: true
+        R-->>B: 200 document
+    else no access or missing
+        A-->>R: false
+        R-->>B: 404 (same body, id is not revealed)
+    end

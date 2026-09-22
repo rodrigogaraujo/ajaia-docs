@@ -1,0 +1,11 @@
+flowchart LR
+    U[Browser] -->|HTTPS| N
+
+    subgraph N[Netlify]
+        P[proxy.ts<br/>cookie gate] --> PG[Next.js pages<br/>App Router]
+        P --> API[API routes<br/>/api/documents, /api/import]
+    end
+
+    API -->|Prisma, pooled 6543| DB[(Supabase Postgres)]
+    PG -->|Prisma| DB
+    CLI[npm run db:push / db:seed] -->|direct 5432| DB
