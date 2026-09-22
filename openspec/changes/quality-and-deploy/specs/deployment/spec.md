@@ -75,6 +75,49 @@ The system SHALL deploy from the repository's main branch, so that what is publi
 - **WHEN** the repository is published
 - **THEN** it is private
 
+### Requirement: Server-only code does not reach the browser
+
+The system SHALL keep server-only dependencies out of the client bundle. Document conversion in particular runs only on the server, and its libraries MUST NOT be shipped to a browser. Where a client component needs a rule that server code also uses — the accepted file types, the size limit, how an extension is read — that rule MUST live in a module carrying no server-only dependency, so importing it costs the client nothing.
+
+#### Scenario: Conversion libraries are absent from the client
+
+- **WHEN** the application is built for production
+- **THEN** no client bundle contains the Word or Markdown conversion libraries
+
+#### Scenario: The client keeps the rules it needs
+
+- **WHEN** a user chooses a file to import
+- **THEN** the accepted types and the size limit are still checked in the browser before uploading
+
+#### Scenario: Shared rules stay dependency-free
+
+- **WHEN** a module is imported by both a client component and server code
+- **THEN** it pulls in no server-only dependency
+
+### Requirement: The critical path is covered by an end-to-end test
+
+The system SHALL provide an automated end-to-end test, runnable by a single command, exercising the sharing path in a real browser across three users. It MUST cover a document being created, formatted, and shared, the recipient finding and editing it, and a third user being refused — so that a regression in any of them fails a test rather than reaching a reviewer.
+
+#### Scenario: The suite runs from one command
+
+- **WHEN** the end-to-end command is run
+- **THEN** the suite executes against a real browser and reports pass or fail
+
+#### Scenario: The owner's path is covered
+
+- **WHEN** the suite runs
+- **THEN** it signs in as the first user, creates a document, applies formatting, and shares it with the second user through the share dialog
+
+#### Scenario: The recipient's path is covered
+
+- **WHEN** the suite runs
+- **THEN** it confirms the second user finds the document under "Shared with me" and can edit it
+
+#### Scenario: The refusal is covered
+
+- **WHEN** the suite runs
+- **THEN** it confirms a third user opening the document's address directly is refused with `403`
+
 ### Requirement: A deployment is proven on its live URL
 
 The system SHALL be verified against the deployed URL, not only against a local server, before the deployment is reported as working. Each check MUST be demonstrated; a check that was not run SHALL NOT be reported as passing.

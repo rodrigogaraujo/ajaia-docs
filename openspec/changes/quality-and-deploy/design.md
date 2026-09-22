@@ -47,6 +47,24 @@ Omitting the third is the common mistake: it is the case that produces a genuine
 
 The boundary shows a readable message and a way back. It does not show the error's message, which can carry internal detail, and on a server error would in any case be redacted before reaching the browser.
 
+### The import rules split out, rather than the client component being rewritten
+
+Measured before planning: a production build emits a 908K client chunk containing `mammoth`. The cause is a single import line — `src/app/import-file.tsx` carries `"use client"` and imports `ACCEPTED_EXTENSIONS`, `IMPORT_MAX_BYTES`, `extensionOf` and `isAcceptedExtension` from `src/lib/import.ts`, which imports `mammoth` and `marked` at module scope. The bundler cannot know the client only wants four small values, so it takes the whole graph.
+
+The fix is to split by dependency weight, not by layer: `src/lib/import-rules.ts` holds the four, imports nothing heavier than the standard library, and is imported by both the client component and `import.ts`. One definition of each rule, and the client pays nothing for it.
+
+*Alternative considered:* move the client-side checks into the route and let the server reject. Rejected — it would delete the check that tells a user immediately, which `file-import` specified precisely so they are not made to wait for an upload that was never going to work.
+
+This is also the first concrete data point for the `mammoth` bundle-weight question deferred here from `file-import`. It confirms the library is heavy enough to matter; what remains is measuring it inside a Netlify Function, where it legitimately belongs.
+
+### The end-to-end test covers the journey no unit test can
+
+The sharing path has been verified repeatedly in this project by driving a browser by hand. That proved it worked at the time and protects nothing afterwards. Three users, two browser contexts, a dialog and an authorization boundary is exactly the shape that unit tests cannot cover and that breaks quietly.
+
+The spec lives at `tests/e2e/sharing.spec.ts`, outside `src/`, so Vitest's `src/**/*.test.ts` pattern does not try to run a Playwright spec — the two runners have incompatible globals and the failure is confusing when it happens.
+
+It asserts from the rendered page rather than from the API. An end-to-end test that checks the API has only re-tested what the unit and route tests already cover, while leaving the part that actually breaks — the dialog, the sections, the refusal message — unchecked.
+
 ### Verification runs against the deployed URL, not a local build
 
 A local build passing proves the code compiles, not that the deployment works — the two differ in environment variables, the database engine binary, and the serverless bundle. The three checks therefore run against the live host.

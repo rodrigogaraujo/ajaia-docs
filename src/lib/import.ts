@@ -2,28 +2,23 @@ import mammoth from "mammoth";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
 import { DEFAULT_DOCUMENT_TITLE, TITLE_MAX_LENGTH } from "@/lib/documents";
+import {
+  ACCEPTED_EXTENSIONS,
+  extensionOf,
+  isAcceptedExtension,
+} from "@/lib/import-rules";
 import { ALLOWED_TAGS, sanitizeDocumentHtml } from "@/lib/sanitize";
 
-export const IMPORT_MAX_BYTES = 2 * 1024 * 1024;
-
-export const ACCEPTED_EXTENSIONS = [".txt", ".md", ".docx"] as const;
-
-export type AcceptedExtension = (typeof ACCEPTED_EXTENSIONS)[number];
+export {
+  ACCEPTED_EXTENSIONS,
+  IMPORT_MAX_BYTES,
+  extensionOf,
+  isAcceptedExtension,
+} from "@/lib/import-rules";
+export type { AcceptedExtension } from "@/lib/import-rules";
 
 export class UnsupportedFileType extends Error {}
 export class ConversionFailed extends Error {}
-
-export function extensionOf(fileName: string): string {
-  const base = fileName.slice(fileName.lastIndexOf("/") + 1);
-  const dot = base.lastIndexOf(".");
-  return dot <= 0 ? "" : base.slice(dot).toLowerCase();
-}
-
-export function isAcceptedExtension(
-  extension: string,
-): extension is AcceptedExtension {
-  return (ACCEPTED_EXTENSIONS as readonly string[]).includes(extension);
-}
 
 export function titleFromFileName(fileName: string): string {
   const base = fileName.slice(fileName.lastIndexOf("/") + 1);

@@ -14,6 +14,8 @@ It also fills the one gap the earlier changes left in the interface. Every failu
 - Set `DATABASE_URL` and `DIRECT_URL` as Netlify environment variables, read from the local `.env`, never printed.
 - Verify on the live URL, with evidence, that `/login` lists the three seeded users, signing in as Alice reaches the dashboard, and `GET /api/documents` without a cookie returns `401` JSON.
 - Record the live URL in `README.md`.
+- **Fix a bundling defect found while planning this change**: a production build ships a 908K client chunk containing `mammoth`, because the dashboard's import control is a client component importing from `src/lib/import.ts`, which pulls the Word and Markdown converters in at module scope. The rules the browser actually needs — accepted extensions, the size limit, how an extension is read — move to a dependency-free `src/lib/import-rules.ts`.
+- Add an end-to-end test of the sharing path in a real browser, run by `npm run test:e2e`, so the three-user journey that has only ever been checked by hand is checked by a suite.
 
 **Already satisfied, verified rather than built.** The scope asked for several things the Netlify work during `setup-foundation` already put in place, and re-doing them would be churn:
 
@@ -43,7 +45,9 @@ These become verification tasks. If any turns out not to hold, the task fails an
 
 ## Impact
 
-- **New code**: `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/not-found.tsx`.
+- **New code**: `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/not-found.tsx`, `src/lib/import-rules.ts`, `tests/e2e/sharing.spec.ts`.
+- **Changed code**: `src/app/import-file.tsx` imports its rules from the dependency-free module instead of the conversion module.
+- **New dependency**: Playwright, as a dev dependency only.
 - **Changed**: `README.md` gains the live URL.
 - **New infrastructure**: a private GitHub repository and a Netlify site, both created only after the names are confirmed.
 - **Secrets**: the two database URLs move into Netlify's environment. They are read from `.env` and never printed to the chat, a log, a commit or a spec.

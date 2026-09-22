@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { saveStatusLabel } from "@/lib/save-status";
 import { EditorToolbar } from "./editor-toolbar";
 import { DeleteDocument } from "./delete-document";
+import { ExportButton } from "./export-button";
 import { ShareDialog } from "./share-dialog";
 import { useDocumentSave } from "./use-document-save";
 
@@ -45,8 +46,12 @@ function TitleField({
   onCommit: (next: string) => void;
 }) {
   const [draft, setDraft] = useState(title);
+  const [lastTitle, setLastTitle] = useState(title);
 
-  useEffect(() => setDraft(title), [title]);
+  if (title !== lastTitle) {
+    setLastTitle(title);
+    setDraft(title);
+  }
 
   function commit() {
     const trimmed = draft.trim();
@@ -192,6 +197,10 @@ export function DocumentEditor({ documentId }: { documentId: string }) {
           </p>
         </div>
         <div className="flex items-center gap-2 pt-2">
+          <ExportButton
+            title={state.document.title}
+            getHtml={() => editor?.getHTML() ?? ""}
+          />
           {state.document.role === "owner" ? (
             <>
               <button

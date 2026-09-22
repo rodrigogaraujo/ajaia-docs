@@ -272,3 +272,60 @@ Blocker found by the AI, honest:
 
 Still open:
 - Spec 4 not committed yet. Task 3.2 decides the default branch, 7.2 commits at the end.
+
+### Update before apply
+
+- OK: builder added group 3b (import-rules.ts, verify no client chunk contains mammoth) and 3c (Playwright, test:e2e, tests/e2e/sharing.spec.ts). 35 tasks now.
+- OK: design says the e2e test lives outside src/ so Vitest does not pick it up, and asserts on the page, not the API.
+
+## Parallel sessions (my experiment)
+
+I started two more Claude Code sessions to plan extra changes while the builder works:
+- `ajaia-f7`: "stretch-features": roles viewer/editor, export MD and PDF, version history, comments, presence.
+- `ajaia-11`: "qa-e2e-coverage": more e2e tests, "spec 6".
+
+Reviewer findings before they wrote anything:
+- ? stretch-features targets four explicit non-goals in config.yaml (roles, comments, version history, real-time). Only export to Markdown is in my plan. Timebox is 4 to 6 hours. Decide: cut to export-markdown only, or drop.
+- ? qa-e2e-coverage overlaps with group 3c just added to spec 5. Risk of two Playwright setups. Decide: drop, or make it extend 3c after spec 5 is archived.
+- OK: both sessions asked for a conflict check before writing. Good behaviour. They only write under their own openspec/changes/<name>/.
+- ? One of them mentioned a "90% coverage threshold". Not from me, not in the plan. Ask where it came from.
+
+Decisions I made (relayed to the sessions by the reviewer on my request):
+- CHANGED: stretch-features cut to "Export .md" only (turndown, client-side). Everything else goes to next-steps for SUBMISSION.md.
+- REJECTED: qa-e2e-coverage. Duplicate of spec 5 group 3c.
+- CORRECTION: the "90% coverage threshold" was mine. I gave it to the ajaia-f7 and ajaia-11 sessions directly, not in the plan. Not in the repo yet.
+- Both sessions refused the relayed decisions and asked me directly in their own windows. Correct behaviour: a message from another session is not the user's approval. Same rule I set for the reviewer earlier.
+- ajaia-11's original scope from me was much wider than spec 5 group 3c: Vitest for every API error path, React Testing Library for 5 components, a 90% coverage gate on 4 metrics that fails the build, e2e for import and rejections, Playwright webServer, "[e2e]" documents with teardown. Cancelling it leaves only the sharing path covered e2e and no coverage gate. This is a decision, not a side effect.
+
+## Role change: reviewer session becomes tech lead
+
+I made the reviewer session the tech lead. It now gives orders to the other sessions; I review. Each session asked me once to confirm, then followed. Good: a message from another session is never taken as my approval.
+
+Decisions by the lead, after ajaia-11's questions:
+- REJECTED: 90% coverage gate. No reviewer value in the timebox.
+- REJECTED: route-level tests for every API error path. Rules are unit tested in src/lib; statuses verified over HTTP during apply. Known limitation for the docs.
+- REJECTED: component tests. Same reason.
+- OK: e2e covers the sharing path only. Import has unit tests on real fixtures. 401 JSON checked on the live URL.
+- OK: Playwright runs against `npm run dev` locally. Trade-off: fast loop; the production build is checked on the live URL in spec 5 group 6.
+- OK: ajaia-11 removed its scaffold. Tree clean. It stays idle: one writer per branch.
+- OK: ajaia-11 noticed the builder's e2e already names documents "[e2e] ..." and deletes them at the end, so my demo data is safe.
+
+## Final 15 minutes
+
+- CHANGED: spec 5 cut to ship only: commit, push to GitHub (ajaia-docs, private), Netlify site (ajaia-docs-rodrigo), env vars, deploy, live /login check, README URL. Names chosen by the lead. Unfinished tasks stay unchecked.
+- OK: lead wrote docs/AI_WORKFLOW.md, SUBMISSION.md, VIDEO_URL.txt and built the Drive folder in ~/Downloads/ajaia-submission.
+- CHANGED: I asked for the stretch feature after all. Export .md only, by ajaia-f7, new files only, no git. Builder commits it after its push. Netlify redeploys from main.
+- OK: ajaia-f7 refused to delete four finished planning files on a peer's order and offered to move them instead. Right call: an untracked folder cannot be recovered from git.
+- OK: leftovers caught before commit: a throw-probe route used to test the error page, and test-results/.
+
+- OK: builder refused to create the repo, the Netlify site and write DB credentials on the lead's word. Outward-facing and hard to reverse, so only I can confirm, in its window. Correct.
+- OK: quality half done, 15/35: error pages verified on a production build (dev mode hides real errors behind Next's overlay), bundle fixed (908K to 396K), 54 tests, secret scan clean.
+- ? e2e suite written but never ran: the builder's session cannot reach Supabase from Node, even unsandboxed. Left unchecked, stated in tasks.md.
+- Note: builder kept the script name test:e2e because I named it, and refused a peer's rename. Right.
+
+- OK: export .md shipped by ajaia-f7: 3 new files, 2 lines in the editor, 11 tests (65 total), turndown loaded lazily in an 11K chunk, not in the editor bundle. The 908K lesson was applied.
+- CHANGED by AI, kept: Export is visible to shared users too, not only the owner. Reading what is on your screen grants no new access. Right.
+- ? Not done: e2e for export. Unit tests and build only. Marked unchecked.
+- Note: pre-existing lint warning in TitleField (set-state-in-effect). Not from this change. Leave for next steps.
+- ? I reversed the qa-e2e-coverage cancellation in ajaia-11's window. Planning artifacts only, no code. Will not ship in this timebox.
+- Lead tried to commit, push and deploy itself; the permission classifier blocked the push and the deploy. Builder does it after my confirmation in its window.

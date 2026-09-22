@@ -7,7 +7,7 @@ import {
   IMPORT_MAX_BYTES,
   extensionOf,
   isAcceptedExtension,
-} from "@/lib/import";
+} from "@/lib/import-rules";
 
 const ACCEPTED_LABEL = ACCEPTED_EXTENSIONS.join(", ");
 const LIMIT_LABEL = `${IMPORT_MAX_BYTES / (1024 * 1024)}MB`;
