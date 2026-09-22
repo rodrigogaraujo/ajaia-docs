@@ -1,0 +1,42 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id     String          @id @default(cuid())
+  name   String
+  email  String          @unique
+  owned  Document[]
+  shares DocumentShare[]
+}
+
+model Document {
+  id          String          @id @default(cuid())
+  title       String
+  contentHtml String
+  ownerId     String
+  owner       User            @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  shares      DocumentShare[]
+
+  @@index([ownerId])
+}
+
+model DocumentShare {
+  documentId String
+  userId     String
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@id([documentId, userId])
+  @@index([userId])
+}

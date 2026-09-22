@@ -1,0 +1,74 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+context: |
+  Product
+  Ajaia Docs - a lightweight collaborative document editor inspired by Google Docs.
+  This is a timeboxed take-home, budget 4 hours. The goal is one coherent, working
+  product slice end to end, not feature parity with Google Docs. When scope and the
+  time budget conflict, cut scope rather than ship a broad set of half-working features.
+
+  Tech stack
+  - Next.js (App Router) + TypeScript
+  - Tailwind CSS
+  - TipTap for the rich text editor
+  - Prisma ORM against Supabase Postgres
+  - Vitest for tests
+  - Deployed on Netlify
+
+  Core scope
+  1. Documents: create, rename, edit, save, and reopen, with rich text formatting -
+     bold, italic, underline, headings, bullet lists, numbered lists.
+  2. Upload a .txt, .md, or .docx file to create a new editable document.
+  3. Sharing: a document owner can grant another user access to a document. The UI
+     separates "My documents" from "Shared with me".
+  4. Persistence in Postgres.
+
+  Non-goals - out of scope, do not propose or build these
+  - Real authentication. Users are mocked via seeded records.
+  - Real-time collaborative editing.
+  - Role-based permissions. Access is binary: a user either has access or does not.
+  - Comments.
+  - Version history.
+
+  Conventions
+  - Access control is always enforced on the server, never only in the UI. Every
+    route that reads or writes a document re-checks ownership or share access
+    server-side, regardless of what the client sends.
+  - Business rules live in small pure functions in src/lib so they are testable
+    without a database or a request.
+  - Validate all inputs with zod.
+  - API errors return JSON of the shape { error: string } with an accurate HTTP
+    status code.
+  - Keep components small. No over-engineering - the 4-hour budget is a real
+    constraint on how much abstraction is worth adding.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
