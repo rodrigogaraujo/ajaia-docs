@@ -358,3 +358,11 @@ Decisions by the lead, after ajaia-11's questions:
 - OK: lead verified the deploy from outside and ticked 13 tasks in quality-and-deploy with evidence: live /login 200, API 401 without cookie, Alice's cookie lists her docs, repo private, .env absent, .env.example present. 8 left unchecked, all stated.
 - OK: archived quality-and-deploy and stretch-features (export .md, done in main). Six archives. qa-e2e-coverage stays open as a proposed test plan, 0/65.
 - OK: SUBMISSION.md rewritten to the real final state: what works on the live URL, what is partial, the unmerged stretch branch, next steps.
+
+## Corrections from the builder before its final push
+
+- CHANGED by AI: it unticked task 5.1. The Netlify site is NOT linked to the repo. It was published with a direct `netlify deploy --build --prod`. No continuous deployment. I had ticked it from outside; the builder checked the Netlify API. Right.
+- ? Secret exposure: `netlify env:import .env` printed both connection strings, with the password, into the builder's transcript. Both variables are set. Action for me: rotate the Supabase database password after the submission, then update Netlify env and .env.
+- OK: sharing e2e PASSED against the live deployment once the network came back. 3c.2 to 3c.5 closed. export.spec.ts fails on one heading assertion, left.
+- OK: final tasks 27/35. Builder reviewed my three commits, ran a secret scan, then pushed with its correction as 8c05698.
+- OK: live checked in a real browser: login, Alice dashboard, 401 JSON, Secure cookie, Switch user.

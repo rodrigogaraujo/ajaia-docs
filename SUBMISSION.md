@@ -38,7 +38,8 @@ Try: sign in as Alice, open "Quarterly plan", share it with Carol. Switch user t
 
 ## What is partial
 
-- Two Playwright end-to-end specs exist (`tests/e2e/sharing.spec.ts`, `tests/e2e/export.spec.ts`) but never ran: the database pooler was not reachable from the build machines during the last hour. Run them with `npm run test:e2e` against `npm run dev` with a reachable database.
+- Playwright: `tests/e2e/sharing.spec.ts` passed once against the live deployment (Alice creates and shares, Bob edits, Carol gets 403). `tests/e2e/export.spec.ts` fails on one assertion about a second-level heading and was not fixed. Run with `npm run test:e2e`; it needs a reachable database.
+- Deploy is manual: the Netlify site was published with `netlify deploy --build --prod`, it is not linked to the repository, so a push does not redeploy. The live build matches the submitted source; later commits changed docs only.
 - Two checks in `quality-and-deploy` stayed unverified and are marked unchecked: the root error boundary in a real failure, and the client-side file rejection after the bundle refactor.
 - No route-level tests for every error status. The rules behind them are unit tested and each status was verified over HTTP during development.
 - Lint is not clean: three pre-existing `react-hooks/set-state-in-effect` findings and one unused import.
@@ -52,7 +53,7 @@ A branch `stretch-features` (not merged, not deployed) holds a first pass at vie
 
 ## Next 2 to 4 hours
 
-1. Run the two e2e specs in CI with a reachable database, and fix the Escape bug.
+1. Link the Netlify site to the repository for continuous deployment, run both e2e specs in CI, fix the export spec assertion and the Escape bug.
 2. Viewer versus editor role on a share (from the unmerged branch, with `db push`).
 3. Export to PDF.
 4. Version history from autosave snapshots, then comments.
