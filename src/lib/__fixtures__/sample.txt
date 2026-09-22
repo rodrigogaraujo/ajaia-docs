@@ -1,0 +1,6 @@
+First block of text.
+Still the first block.
+
+Second block after a blank line.
+
+<script>alert(1)</script> and 5 < 6 & 7 > 2

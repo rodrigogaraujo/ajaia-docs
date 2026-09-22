@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { formatUpdatedAt } from "@/lib/format";
+import { ImportFile } from "./import-file";
 
 type DocumentRow = {
   id: string;
@@ -138,6 +139,8 @@ export function DocumentsDashboard() {
           </p>
         ) : null}
       </div>
+
+      <ImportFile />
 
       {nothingAtAll ? (
         <div className="rounded-lg border border-dashed border-black/20 px-6 py-10 text-center dark:border-white/25">

@@ -193,3 +193,82 @@ Gap I found, not in any prompt:
 
 AI errors, both in its own test harness:
 - Playwright dialog checks failed 5/20 with a fixed 1.2s wait. Supabase round trip is 2 to 3s. Replaced with waitForFunction. 20/20 after. Same pattern as before: fixed sleeps in e2e tests are wrong.
+
+## 4. file-import
+
+Committed spec 3 first: cded45f, secret scan before staging, .env absent.
+
+### Proposal review (before apply)
+
+Big find by the AI, not in my prompt:
+- CHANGED by AI: my prompt said convert, then sanitize. The AI showed that sanitize-html keeps the text of a removed tag, so `<h3>Budget</h3>` would become the bare word "Budget" and a Word doc with sub-headings would arrive as a wall of text. No error, silent loss. New pipeline: convert, normalize, sanitize, store. Normalize demotes: h3 to h6 become h2, blockquote and code become p, each table cell becomes its own p, links keep their text, images and hr are dropped. The mapping table is in design.md. Kept.
+- OK: alternative "widen the sanitizer allowlist" was rejected, because the editor's own saves would then store tags the toolbar cannot make.
+
+Decisions the AI made, kept:
+- OK: 1 new capability, 0 modified. Opposite of spec 3, with the reason written: import overlaps nothing.
+- OK: validate by extension, not MIME. Browsers report .md as three different types. Stated as converter choice, not a security control. Sanitizer is the security.
+- OK: status codes 400 unsupported or empty, 413 too large, 422 conversion failed. 422 so a corrupt .docx is never a 500.
+- OK: nothing written to the DB until conversion succeeds. No empty documents left by failed imports.
+- OK: title from file name is repaired, not refused. Long name is shortened, empty name gets the default.
+- OK: `fileToHtml(name, buffer)` is async but pure: no DB, no request, no file system.
+
+Risks written down, not hidden:
+- mammoth is heavy for a serverless function. To measure in spec 5, on Netlify.
+- 2MB .docx can convert to more than the 500KB content limit. Gets its own message.
+- marked renders raw HTML inside Markdown. Covered by normalize plus sanitize, with a hostile-file scenario.
+
+To watch at apply:
+- 28 tasks. Biggest change so far. Time.
+- A real .docx fixture is needed for tests. See how the AI produces it.
+
+AI errors: none this round.
+
+### Apply review
+
+Checked by me: `tsc` clean, `npm test` 54/54, no comments, import.ts imports no Prisma and no next/, fixtures present, mammoth 2.5MB and marked 0.5MB on disk.
+
+Good, kept:
+- OK: 28/28 tasks. Normalize step verified on real data: h3 from .md and from .docx became h2, not bare text. The design claim holds.
+- OK: .docx fixture is a real OOXML zip generated with Python, with Heading1 to 3 styles and bullet plus decimal numbering. Not a stub.
+- OK: nothing written on failure. Five failing requests created zero documents.
+- OK: client rejects unsupported and oversized files with zero requests sent. AI counted the requests.
+- OK: 413 also used when a small file expands past the 500KB content limit, with its own message.
+
+Two real bugs in the AI's own code, both caught by its tests:
+- `titleFromFileName(".txt")` returned ".txt" instead of the default title. A guard meant for dotfiles kept the extension as the title. Fixed.
+- The normalizer produced nested `<p><p>text</p></p>` from marked's blockquote output. The sanitizer "repaired" it into stray empty paragraphs. Found by an invariant test: sanitizing the output must not change it. Fixed by re-parsing through the editor sanitizer and dropping empty paragraphs. The invariant is now a permanent test.
+
+Honesty note:
+- AI first marked all 28 done, then noticed 3 were never exercised (5.5, 6.3, empty-file in the browser). Went back and verified all three before reporting.
+
+Bug I found, not in the AI's report:
+- ? The dashboard client bundle includes mammoth and marked: a 908KB chunk. Cause: `src/app/import-file.tsx` (client) imports constants from `src/lib/import.ts`, which imports the converters at the top. The build passes, but every dashboard visit downloads converters that only run on the server. Fix: move the extension list, size limit and `extensionOf` / `isAcceptedExtension` into a small `src/lib/import-rules.ts` with no heavy imports, and import that from both sides.
+
+### Archived
+
+- OK: four archives. Main specs: 6 capabilities, 50 requirements, 162 scenarios. Validate 6/6.
+- ? The 908KB client bundle bug is NOT fixed yet. I archived before pasting the fix. Fix it inside spec 5 (quality-and-deploy) instead.
+- Flagged by AI: nothing committed since cded45f. Commit before spec 5.
+- Flagged by AI: mammoth weight inside the Netlify Function still not measured. Spec 5.
+
+## 5. quality-and-deploy
+
+### Proposal review (before apply)
+
+Note: I pasted my own prompt here, not the reviewer's draft. So two items are missing from this change:
+- ? The 908KB client bundle fix (mammoth and marked in the dashboard chunk). Not in scope. Must add.
+- ? Playwright e2e suite committed as `test:e2e`. Not in scope. Playwright was only used ad hoc by the AI. Decide: add, or state in docs that e2e ran ad hoc.
+
+Good, kept:
+- OK: AI listed what my prompt asked for that already exists (scripts, .nvmrc, netlify.toml, binaryTargets, .env.example, tests) and turned them into verify tasks instead of rebuilding. No churn.
+- OK: three error files, not one: not-found, error, and global-error with its own html and body. AI explains why the third one is the one people forget.
+- OK: verification runs on the live URL, not on a local build. The 401 JSON check on /api/documents proves the proxy exclusion works in production.
+- OK: "a failed build is read before it is retried". Written as a scenario.
+- OK: secrets are read from .env and set on Netlify without printing. Task 3.3 scans the tree for the project ref before publishing.
+- OK: nothing created on GitHub or Netlify before I confirm the names.
+
+Blocker found by the AI, honest:
+- The AI says the GitHub and Netlify MCP tools are configured but not visible in its session. I added them after the session started, same problem I had with Supabase. It has `gh` CLI, no Netlify route. It wrote this in design.md and stopped before group 4 instead of guessing. Fix: restart the builder session so the MCP tools load. OpenSpec artifacts are on disk, so nothing is lost.
+
+Still open:
+- Spec 4 not committed yet. Task 3.2 decides the default branch, 7.2 commits at the end.
