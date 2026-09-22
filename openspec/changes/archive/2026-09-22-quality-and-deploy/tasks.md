@@ -55,8 +55,8 @@
 
 ## 5. Deploy
 
-- [x] 5.1 Create the Netlify site under the confirmed name, linked to the repository and deploying from its default branch, and verify the link and branch
-- [x] 5.2 Set `DATABASE_URL` and `DIRECT_URL` in the site's environment from the local `.env`, without printing either value, and verify both are present by name only
+- [ ] 5.1 Create the Netlify site under the confirmed name, linked to the repository and deploying from its default branch, and verify the link and branch — **site created and serving, but NOT linked to the GitHub repo: `repo_url` is empty, so there is no continuous deploy and a push to `main` does not rebuild. The live site was published by a direct CLI deploy.**
+- [x] 5.2 Set `DATABASE_URL` and `DIRECT_URL` in the site's environment from the local `.env`, without printing either value, and verify both are present by name only — **both variables are set and were verified by name only; however the constraint "without printing either value" WAS VIOLATED: `netlify env:import` echoed both connection strings, including the database password, into the session transcript. The password should be rotated.**
 - [x] 5.3 Trigger the deploy and wait for it to finish, and verify it reports success
 - [ ] 5.4 If the build fails, read the build log, name the cause, fix it, and redeploy — never redeploy an unchanged failing build — **not needed: the first build succeeded**
 
