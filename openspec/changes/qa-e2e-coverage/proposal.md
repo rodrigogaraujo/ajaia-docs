@@ -88,6 +88,14 @@ Coordination, since three sessions are active in this repo:
   group 3c stays as the sharing spec, and this change makes it runnable, folds it into the shared
   fixtures and renames the script. If 3c has not landed when this change is applied, the sharing
   spec is written here instead.
+- Role-based sharing exists, but not on `main`. Viewer and editor levels, a view-only refusal on the
+  document update route, a level of access on a grant, and a handler that changes a recipient's level
+  all live on the unmerged branch `stretch-features` (worktree `../Ajaia-stretch`, commit `09abc56`),
+  with a schema change that has never been migrated. This change specifies tests for that surface and
+  marks them conditional on the branch merging, so the plan is ready either way and nothing here
+  fails against `main`. Two records are stale and need the user rather than this change: 
+  `openspec/config.yaml` still lists role-based permissions under "Non-goals - out of scope, do not
+  propose or build these", and the archived `document-access` spec still specifies access as binary.
 - `stretch-features` (session ajaia-f7) has landed `src/lib/export-markdown.ts` with its own 11
   passing tests, and `src/app/documents/[id]/export-button.tsx`, which has none and is already
   imported by `document-editor.tsx`. The export button therefore falls inside this change's coverage

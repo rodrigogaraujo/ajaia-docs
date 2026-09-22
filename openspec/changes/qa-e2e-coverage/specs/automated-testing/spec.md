@@ -9,6 +9,14 @@ did not create.
 
 ## ADDED Requirements
 
+> **Scope note on levels of access.** Four scenarios below concern viewer and editor sharing: "A
+> view-only recipient is refused an edit", "An invalid share role is refused", "A view-only share
+> does not grant editing" and "The share dialog grants and changes a level of access". That behaviour
+> exists only on the unmerged branch `stretch-features` and is not on `main`. Those four, and the
+> clauses elsewhere that mention a recipient's level of access, take effect when that branch merges.
+> Until then the remaining requirements stand on their own, and sharing is binary as
+> `document-access` specifies.
+
 ### Requirement: The test command enforces a coverage floor
 
 The project SHALL measure test coverage over the code that carries behaviour, and the coverage
@@ -77,6 +85,14 @@ produce, asserting both the status code and the `{ "error": string }` body.
   no field
 - **THEN** a test asserts `400` for each case
 
+#### Scenario: A view-only recipient is refused an edit
+- **WHEN** a share recipient whose role is view-only calls the document update handler
+- **THEN** a test asserts `403` and that no update was written
+
+#### Scenario: An invalid share role is refused
+- **WHEN** a grant or a role change names a role that is neither viewer nor editor, or names none
+- **THEN** a test asserts `400` for each case
+
 #### Scenario: A duplicate share is refused
 - **WHEN** a grant is attempted for a user who already has a share
 - **THEN** a test asserts `409` and that no second share row is written
@@ -135,8 +151,13 @@ empty states, with the network substituted.
 
 #### Scenario: The share dialog shows who has access and reports each failure
 - **WHEN** the dialog is opened and a grant is attempted that fails
-- **THEN** a test asserts the owner and recipients are listed, and that each failure status produces
-  its own message rather than one generic message
+- **THEN** a test asserts the owner and recipients are listed with each recipient's level of access,
+  and that each failure status produces its own message rather than one generic message
+
+#### Scenario: The share dialog grants and changes a level of access
+- **WHEN** the owner grants access choosing a level, and then changes an existing recipient's level
+- **THEN** a test asserts the chosen level was sent, the list reflects it afterwards, and a recipient
+  who is not the owner is offered no control that changes it
 
 #### Scenario: The import control refuses a bad file before any request
 - **WHEN** a file with an unsupported extension, an empty file, or a file over the limit is chosen
@@ -237,10 +258,16 @@ The suite SHALL prove the whole lifecycle of a share across three real browser s
 this is the one flow that crosses users, a dialog and an authorization boundary, and it SHALL prove
 that access ends when the share ends.
 
-#### Scenario: A share grants access
-- **WHEN** the owner shares a document with a second user through the share dialog
+#### Scenario: A share grants editing access
+- **WHEN** the owner shares a document with a second user through the share dialog, taking the
+  default level of access
 - **THEN** that user finds it under the heading for documents shared with them, opens it, edits it,
   and the edit is still there after a reload
+
+#### Scenario: A view-only share does not grant editing
+- **WHEN** the owner shares a document as view-only, or lowers an existing share to view-only
+- **THEN** the recipient can open and read the document but an attempted edit is refused, and the
+  refusal is visible in the page rather than only in the network response
 
 #### Scenario: A recipient is not offered the owner's controls
 - **WHEN** a share recipient opens the document

@@ -329,3 +329,18 @@ Decisions by the lead, after ajaia-11's questions:
 - Note: pre-existing lint warning in TitleField (set-state-in-effect). Not from this change. Leave for next steps.
 - ? I reversed the qa-e2e-coverage cancellation in ajaia-11's window. Planning artifacts only, no code. Will not ship in this timebox.
 - Lead tried to commit, push and deploy itself; the permission classifier blocked the push and the deploy. Builder does it after my confirmation in its window.
+
+## Video recording
+
+- ? Supabase pooler host unreachable from my network on 6543 and 5432 (both closed), direct host open, project healthy. This is why three sessions could not run e2e. Not an app bug.
+- CHANGED: dev server for the video started with DATABASE_URL pointing at the direct host, via environment only. .env untouched so Netlify gets the pooler URL.
+- OK: local /login 200 with Alice, Bob, Carol.
+- ? I ordered all five stretch features from ajaia-f7 with 15 minutes. It flagged the non-goal conflict again and started. Lead ordered it into a separate git worktree on branch stretch-features so main stays deployable and the video does not break. Merge is my decision after the deploy.
+- ? ajaia-f7 found a real bug, pre-existing: Escape in the title field saves instead of cancelling. Unspecified, left for next steps.
+- ? lint not clean: 3 pre-existing set-state-in-effect errors and one unused import from the import-rules refactor. Left for next steps.
+
+- OK: repo pushed, private: https://github.com/rodrigogaraujo/ajaia-docs. Netlify pending on the builder side.
+- OK: demo data inserted by SQL through the Supabase MCP: Alice owns "Product roadmap Q4" (shared with Bob and Carol), "Onboarding checklist" and "Quarterly plan" (shared with Bob); Bob owns "Sprint retrospective" (shared with Alice). Import samples in ~/Downloads/ajaia-import-samples (md, txt, docx, corrupt docx).
+- ? Local dev server hit Prisma P2024 pool timeout on the direct host. Restarted with connection_limit=3 and pool_timeout=30. Stable after.
+- OK: ajaia-f7 used the worktree. Main tree clean at 715f5bc. Roles and the rest live only on branch stretch-features.
+- ? ajaia-11 finished qa-e2e-coverage planning: 12 requirements, 65 tasks, no apply. Planning only, documents what a full test suite would guarantee.

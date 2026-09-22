@@ -1,5 +1,12 @@
 # Ajaia Docs
 
+## Live
+
+**https://ajaia-docs-rodrigo.netlify.app**
+
+Sign-in is mocked — pick Alice, Bob or Carol on `/login`. To see sharing, sign in as
+Alice, share a document with `bob@ajaia.test`, then switch user to Bob.
+
 A lightweight collaborative document editor inspired by Google Docs. Built as a timeboxed take-home.
 
 Stack: Next.js 16 (App Router) · TypeScript · Tailwind CSS · TipTap · Prisma 6 · Supabase Postgres · Vitest · Netlify.
