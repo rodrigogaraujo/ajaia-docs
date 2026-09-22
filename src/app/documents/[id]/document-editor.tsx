@@ -6,6 +6,8 @@ import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useState } from "react";
 import { saveStatusLabel } from "@/lib/save-status";
 import { EditorToolbar } from "./editor-toolbar";
+import { DeleteDocument } from "./delete-document";
+import { ShareDialog } from "./share-dialog";
 import { useDocumentSave } from "./use-document-save";
 
 type LoadedDocument = {
@@ -13,11 +15,13 @@ type LoadedDocument = {
   title: string;
   contentHtml: string;
   ownerName: string;
+  role: "owner" | "shared";
 };
 
 type LoadState =
   | { status: "loading" }
-  | { status: "unavailable" }
+  | { status: "missing" }
+  | { status: "forbidden" }
   | { status: "error" }
   | { status: "ready"; document: LoadedDocument };
 
@@ -77,6 +81,7 @@ function TitleField({
 
 export function DocumentEditor({ documentId }: { documentId: string }) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [sharing, setSharing] = useState(false);
   const { status: saveStatus, queue, saveNow, retry } = useDocumentSave(documentId);
 
   const editor = useEditor({
@@ -98,8 +103,12 @@ export function DocumentEditor({ documentId }: { documentId: string }) {
     async function load() {
       try {
         const response = await fetch(`/api/documents/${documentId}`);
-        if (response.status === 404 || response.status === 403) {
-          if (!cancelled) setState({ status: "unavailable" });
+        if (response.status === 403) {
+          if (!cancelled) setState({ status: "forbidden" });
+          return;
+        }
+        if (response.status === 404) {
+          if (!cancelled) setState({ status: "missing" });
           return;
         }
         if (!response.ok) throw new Error();
@@ -124,13 +133,25 @@ export function DocumentEditor({ documentId }: { documentId: string }) {
     return <p className="text-sm opacity-60">Loading document…</p>;
   }
 
-  if (state.status === "unavailable") {
+  if (state.status === "forbidden") {
     return (
       <div role="alert" className="flex flex-col items-start gap-3">
-        <p className="font-medium">This document is not available.</p>
+        <p className="font-medium">This document is not available to you.</p>
         <p className="text-sm opacity-60">
-          It may have been deleted, or you may not have access to it.
+          Ask its owner to share it with you.
         </p>
+        <Link href="/" className="text-sm underline">
+          Back to documents
+        </Link>
+      </div>
+    );
+  }
+
+  if (state.status === "missing") {
+    return (
+      <div role="alert" className="flex flex-col items-start gap-3">
+        <p className="font-medium">This document does not exist.</p>
+        <p className="text-sm opacity-60">It may have been deleted.</p>
         <Link href="/" className="text-sm underline">
           Back to documents
         </Link>
@@ -162,11 +183,27 @@ export function DocumentEditor({ documentId }: { documentId: string }) {
               saveNow({ title: next });
             }}
           />
-          <p className="px-2 text-sm opacity-60">
-            Owned by {state.document.ownerName}
+          <p className="px-2 text-sm">
+            <span className="rounded-md bg-black/5 px-2 py-0.5 text-xs font-medium dark:bg-white/10">
+              {state.document.role === "owner"
+                ? "Owner"
+                : `Shared by ${state.document.ownerName}`}
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-2 pt-2">
+          {state.document.role === "owner" ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setSharing(true)}
+                className="rounded-md border border-black/15 px-3 py-1 text-sm transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+              >
+                Share
+              </button>
+              <DeleteDocument documentId={documentId} />
+            </>
+          ) : null}
           {label ? (
             <span
               role="status"
@@ -189,6 +226,10 @@ export function DocumentEditor({ documentId }: { documentId: string }) {
 
       {editor ? <EditorToolbar editor={editor} /> : null}
       <EditorContent editor={editor} />
+
+      {sharing ? (
+        <ShareDialog documentId={documentId} onClose={() => setSharing(false)} />
+      ) : null}
     </div>
   );
 }

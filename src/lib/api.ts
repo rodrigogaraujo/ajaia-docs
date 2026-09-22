@@ -6,8 +6,10 @@ export function apiError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export const notFound = () => apiError("Document not found", 404);
-export const forbidden = () => apiError("You cannot perform this action", 403);
+export const notFound = (message = "Document not found") => apiError(message, 404);
+export const forbidden = (message = "You cannot perform this action") =>
+  apiError(message, 403);
+export const conflict = (message: string) => apiError(message, 409);
 export const unauthorized = () => apiError("Not signed in", 401);
 export const badRequest = (message: string) => apiError(message, 400);
 

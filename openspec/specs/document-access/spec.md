@@ -36,7 +36,7 @@ The system SHALL grant read access to a document to its owner and to any user ho
 
 ### Requirement: Management is reserved to the owner
 
-The system SHALL restrict deleting a document to its owner. Holding a share MUST NOT confer the ability to delete, because access is binary and carries no role.
+The system SHALL restrict both deleting a document and administering its shares to the owner. Holding a share MUST NOT confer the ability to delete the document, to grant access to anyone else, or to revoke anyone's access, because access is binary and carries no role.
 
 #### Scenario: Owner may manage
 
@@ -55,45 +55,60 @@ The system SHALL restrict deleting a document to its owner. Holding a share MUST
 - **WHEN** management is evaluated for a user
 - **THEN** the decision depends only on whether that user owns the document, and not on any share
 
-### Requirement: Refusal does not disclose existence
+#### Scenario: Share recipient may not grant access to others
 
-The system SHALL respond `404` both when a document does not exist and when it exists but the caller has no read access, so that a caller cannot learn whether an identifier is real by comparing responses. `403` SHALL be used only where the caller already has read access but is not permitted the specific action.
+- **GIVEN** a document owned by Alice, shared with Bob
+- **WHEN** Bob attempts to share it with Carol
+- **THEN** the attempt is refused and Carol gains no access
+
+#### Scenario: Share recipient may not revoke access
+
+- **GIVEN** a document owned by Alice, shared with Bob and Carol
+- **WHEN** Bob attempts to revoke Carol's access
+- **THEN** the attempt is refused and Carol keeps her access
+
+### Requirement: Refusal distinguishes a missing document from a forbidden one
+
+The system SHALL answer `404` when a document does not exist and `403` when it exists but the caller may not perform the requested action — whether because they have no access at all, or because they have read access but the action is reserved to the owner. A caller can therefore tell an identifier that is real from one that is not.
 
 #### Scenario: Missing document reports not found
 
 - **WHEN** a caller requests a document identifier that does not exist
 - **THEN** the response status is `404`
 
-#### Scenario: Inaccessible document is indistinguishable from missing
+#### Scenario: Inaccessible document reports forbidden
 
 - **GIVEN** a document owned by Alice with no shares
 - **WHEN** Carol requests it
-- **THEN** the response status is `404`
-- **AND** the response body is indistinguishable from the body returned for a document that does not exist
+- **THEN** the response status is `403`
 
 #### Scenario: Permitted reader refused a privileged action gets 403
 
 - **GIVEN** a document owned by Alice, shared with Bob
 - **WHEN** Bob requests deletion of it
-- **THEN** the response status is `403`, not `404`
+- **THEN** the response status is `403`
+
+#### Scenario: The two refusals are distinguishable
+
+- **GIVEN** a document that exists but is not shared with Carol
+- **WHEN** Carol requests it, and separately requests an identifier that does not exist
+- **THEN** the first is refused with `403` and the second with `404`
 
 ### Requirement: The access boundary holds end to end
 
-The system SHALL hold the access boundary across the whole product, not merely at a single route: a document shared with one user SHALL appear to that user as shared and be openable by them, while a user with no grant SHALL be unable to open it even when given its exact address, and SHALL be told only that it is unavailable.
-
-Granting the share is specified by the sharing capability; here the grant is a precondition.
+The system SHALL hold the access boundary across the whole product, not merely at a single route: a document shared with one user SHALL appear to that user as shared and be openable by them, while a user with no grant SHALL be unable to open it even when given its exact address, and SHALL be told that it is unavailable to them.
 
 #### Scenario: Shared with one user, invisible to another
 
 - **GIVEN** Alice has created a document
-- **AND** that document is shared with Bob
+- **AND** Alice has shared it with Bob
 - **WHEN** Bob opens his dashboard
 - **THEN** the document appears under "Shared with me", attributed to Alice
 - **AND** Bob can open it
 - **WHEN** Carol navigates directly to that document's address
-- **THEN** she is told the document is unavailable
-- **AND** the response that refused her is `404`, identical to one for a document that does not exist
-- **AND** nothing she is shown distinguishes a document she may not see from one that was never there
+- **THEN** she is told the document is unavailable to her
+- **AND** the response that refused her is `403`
+- **AND** she is never shown the document's title or content
 
 #### Scenario: The owner is unaffected by who else was granted access
 

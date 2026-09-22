@@ -163,4 +163,33 @@ AI errors:
 - openspec validate rejected the first delta. AI renamed a scenario inside a MODIFIED block, which reads as a removed scenario. Restored the name, revalidated.
 
 Flagged by AI, my call:
-- Nothing committed since bbd7cc1. Branch `setup-foundation` now holds spec 2, both archives and all main specs. Commit before applying spec 3.
+- Nothing committed since bbd7cc1. Committed as 3f9ea8f on my prompt. AI scanned all files for the DB credentials before staging. .env not in the commit (I checked).
+
+### Apply review
+
+Checked by me: `tsc` clean, `npm test` 31/31, no comments, all 5 routes read, `.env` absent from the commit, Supabase 1 doc / 1 share / 3 users.
+
+Good, kept:
+- OK: 24/24 tasks. `canAccess` is called in one place only, the loader. I grepped it.
+- OK: 403 vs 404 reversal done in one helper. Editor shows "not available to you" vs "does not exist".
+- OK: duplicate grant tested with 4 simultaneous requests: one 201, three 409, one row. AI went back to test this after almost marking it done from a sequential test only.
+- OK: each grant failure has its own message in the dialog. Seeded emails shown as a hint.
+- OK: Bob sees "Shared by Alice" and no Share button. Server still refuses a direct request from Bob.
+
+Gap I found, not in any prompt:
+- CHANGED: no delete button anywhere. The DELETE API worked but nothing in the UI called it. I asked for a Delete button, owner only, with a confirm step. Added. 26/26 tasks.
+- CHANGED: share dialog now closes on Escape.
+- AI decision: confirm step is inline (Delete, then Confirm / Cancel), not window.confirm. Reason: native confirm blocks the page and is hard to test. Kept.
+- OK: verified in Chromium: first click only asks, Cancel keeps the doc, Confirm deletes and returns to the dashboard, doc gone for Bob too, cascade held.
+- Note: no harness errors this round. AI used condition waits from the start. The lesson carried over.
+
+### Archived
+
+- OK: three archives now. Main specs: 5 capabilities, 42 requirements, 128 scenarios. Validate passes.
+- OK: this archive merged into existing specs, with 1 removal and 4 rewrites. AI parsed requirement blocks and put the new 403 rule where the old 404 rule was. I checked: old rule is gone from the main spec.
+- OK: AI did not move files until the merge was verified.
+- Flagged by AI: nothing committed since 3f9ea8f. Commit before spec 4.
+- Flagged by AI, deferred: the "API answers 401" rule lives in document-api, could move to mock-auth. Not worth the time.
+
+AI errors, both in its own test harness:
+- Playwright dialog checks failed 5/20 with a fixed 1.2s wait. Supabase round trip is 2 to 3s. Replaced with waitForFunction. 20/20 after. Same pattern as before: fixed sleeps in e2e tests are wrong.

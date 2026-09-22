@@ -31,6 +31,17 @@ export const updateDocumentSchema = z
 export type CreateDocumentInput = z.infer<typeof createDocumentSchema>;
 export type UpdateDocumentInput = z.infer<typeof updateDocumentSchema>;
 
+export const shareDocumentSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1)
+    .email()
+    .transform((value) => value.toLowerCase()),
+});
+
+export type ShareDocumentInput = z.infer<typeof shareDocumentSchema>;
+
 export const documentListSelect = {
   id: true,
   title: true,

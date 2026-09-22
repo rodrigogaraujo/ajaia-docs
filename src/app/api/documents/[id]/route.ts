@@ -1,22 +1,10 @@
 import { NextResponse } from "next/server";
-import { canAccess, canManage } from "@/lib/access";
-import { badRequest, forbidden, notFound, requireApiUser } from "@/lib/api";
+import { canManage } from "@/lib/access";
+import { badRequest, forbidden, requireApiUser } from "@/lib/api";
+import { loadDocumentFor, refusalFor } from "@/lib/document-loader";
 import { updateDocumentSchema } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
 import { sanitizeDocumentHtml } from "@/lib/sanitize";
-
-async function loadReadable(id: string, userId: string) {
-  const document = await prisma.document.findUnique({
-    where: { id },
-    include: {
-      owner: { select: { name: true } },
-      shares: { select: { documentId: true, userId: true } },
-    },
-  });
-  if (!document) return null;
-  if (!canAccess(userId, document, document.shares)) return null;
-  return document;
-}
 
 export async function GET(
   _request: Request,
@@ -26,8 +14,9 @@ export async function GET(
   if (!user) return response;
 
   const { id } = await ctx.params;
-  const document = await loadReadable(id, user.id);
-  if (!document) return notFound();
+  const load = await loadDocumentFor(id, user.id);
+  if (load.status !== "found") return refusalFor(load);
+  const { document } = load;
 
   return NextResponse.json({
     document: {
@@ -49,8 +38,8 @@ export async function PATCH(
   if (!user) return response;
 
   const { id } = await ctx.params;
-  const document = await loadReadable(id, user.id);
-  if (!document) return notFound();
+  const load = await loadDocumentFor(id, user.id);
+  if (load.status !== "found") return refusalFor(load);
 
   const body = await request.json().catch(() => null);
   const parsed = updateDocumentSchema.safeParse(body ?? {});
@@ -80,9 +69,9 @@ export async function DELETE(
   if (!user) return response;
 
   const { id } = await ctx.params;
-  const document = await loadReadable(id, user.id);
-  if (!document) return notFound();
-  if (!canManage(user.id, document)) return forbidden();
+  const load = await loadDocumentFor(id, user.id);
+  if (load.status !== "found") return refusalFor(load);
+  if (!canManage(user.id, load.document)) return forbidden();
 
   await prisma.document.delete({ where: { id } });
   return NextResponse.json({ ok: true });

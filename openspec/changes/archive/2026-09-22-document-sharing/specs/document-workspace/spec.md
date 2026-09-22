@@ -49,6 +49,44 @@ The system SHALL offer the owner a "Share" control in the editor that opens a di
 - **WHEN** granting access fails because the address matches no user, names the owner, or already has access
 - **THEN** the dialog explains which of those happened, rather than reporting a generic failure
 
+#### Scenario: The dialog closes on Escape
+
+- **GIVEN** the share dialog is open
+- **WHEN** the user presses Escape
+- **THEN** the dialog closes
+- **AND** the document remains open and unchanged behind it
+
+### Requirement: Deleting a document from the editor
+
+The system SHALL offer the owner a way to delete the document from within the editor, and SHALL require a deliberate confirmation before deleting, so that a single misplaced click cannot destroy a document. On success the user SHALL be returned to the dashboard, where the document no longer appears.
+
+#### Scenario: Deleting requires confirmation
+
+- **GIVEN** the owner has a document open
+- **WHEN** they activate the delete control
+- **THEN** the document is not yet deleted
+- **AND** they are asked to confirm
+
+#### Scenario: Confirming deletes and returns to the dashboard
+
+- **GIVEN** the owner has been asked to confirm deletion
+- **WHEN** they confirm
+- **THEN** the document is deleted
+- **AND** they arrive at the dashboard
+- **AND** the document no longer appears there
+
+#### Scenario: Abandoning the confirmation leaves the document alone
+
+- **GIVEN** the owner has been asked to confirm deletion
+- **WHEN** they decline
+- **THEN** the document still exists and remains open
+
+#### Scenario: Deleting removes the document for everyone it was shared with
+
+- **GIVEN** a document owned by Alice and shared with Bob
+- **WHEN** Alice deletes it
+- **THEN** it no longer appears among Bob's documents
+
 ### Requirement: Owner-only controls are hidden from a share recipient
 
 The system SHALL hide deletion and share administration from a user who does not own the document, so the interface never offers an action that would be refused. Hiding them MUST NOT be the only protection — the server refuses the same actions regardless of what the interface showed.
@@ -58,6 +96,12 @@ The system SHALL hide deletion and share administration from a user who does not
 - **GIVEN** a document owned by Alice, shared with Bob
 - **WHEN** Bob opens it
 - **THEN** he is not offered a way to grant or revoke access
+
+#### Scenario: Share recipient is not offered deletion
+
+- **GIVEN** a document owned by Alice, shared with Bob
+- **WHEN** Bob opens it
+- **THEN** he is not offered a way to delete the document
 
 #### Scenario: Share recipient can still edit
 
