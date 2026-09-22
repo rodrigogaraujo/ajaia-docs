@@ -5,12 +5,19 @@
 > `design.md` — "Three sessions are editing this repo".
 
 > **Levels of access are not on `main`.** Six tasks below cover viewer and editor sharing, which
-> lives only on the unmerged branch `stretch-features` (worktree `../Ajaia-stretch`, commit
-> `09abc56`) and whose schema change has never been migrated. Fully conditional on that branch being
+> lives only on the unmerged branch `stretch-features` (worktree `../Ajaia-stretch`) and whose
+> schema change has never been migrated. Fully conditional on that branch being
 > merged: 2.7, 2.8, 3.10, 4.7, 7.4. Partly conditional, in the clauses that mention a level of
 > access: 3.4, 3.5, 3.8, 4.6 — the rest of each of those four is valid against `main` today. Against
 > `main` the role tests fail, because the surface does not exist there. If the branch is not merged,
 > drop the five and delete the clauses from the four.
+>
+> If that branch (`694fd0b` at the time of writing) is merged, three further adjustments apply. It renames
+> `export-button.tsx` to `export-menu.tsx` and adds a PDF option built from `window.print()` and a
+> print stylesheet, so task 4.10 follows the rename and gains the PDF path. It already carries
+> `tests/e2e/roles.spec.ts` and `tests/e2e/export.spec.ts`, so task 7.4 adopts that roles spec instead
+> of writing a second one. It carries no component test of any kind, so the export menu and the PDF
+> path have no coverage below the browser level anywhere, and that gap belongs to this change.
 
 ## 1. Test harness
 
@@ -56,7 +63,7 @@
 - [ ] 4.7 Test the level-of-access controls in `share-dialog.tsx`: granting with a chosen level sends that level, changing an existing recipient's level sends the change and the list reflects it, and a recipient who is not the owner sees no control that changes it — and verify the request body carries the chosen level **(conditional: stretch-features)**
 - [ ] 4.8 Test `import-file.tsx`: an unsupported extension, an empty file and an oversized file each show their message with no request sent, an accepted file disables the control while in flight then navigates on success, and a server refusal shows the server's message — and verify the no-request cases by asserting the request count is zero
 - [ ] 4.9 Test `use-document-save.ts` with `renderHook`: a queued change saves after the debounce, a second change while a save is in flight does not start a parallel save, the status reflects the last finished save and is never optimistic, a failure exposes the error status, and retry re-sends — and verify only one request is in flight at a time
-- [ ] 4.10 Test `export-button.tsx` with `URL.createObjectURL` stubbed: the download name comes from the document title and the exported content is the converted Markdown, and verify the object URL is revoked afterwards
+- [ ] 4.10 Test the export control with `URL.createObjectURL` stubbed: the download name comes from the document title and the exported content is the converted Markdown, and verify the object URL is revoked afterwards — the file is `export-button.tsx` on `main`, and `export-menu.tsx` if `stretch-features` merges, in which case also cover the PDF option and verify the print stylesheet hides the controls
 - [ ] 4.11 Test `delete-document.tsx`: the first click only asks, cancelling keeps the document and sends nothing, confirming sends the delete and navigates away, and a failed delete shows an error — and verify the confirm step is inline rather than a native dialog
 
 ## 5. The coverage gate
@@ -80,7 +87,7 @@
 - [ ] 7.1 Adopt `tests/e2e/sharing.spec.ts` from `quality-and-deploy` group 3c onto the shared helpers and the `[e2e]` prefix, and verify it passes against a running application — this is the task that group 3c left unrun
 - [ ] 7.2 Extend the sharing spec so the owner revokes access and the recipient, on reloading, is refused and no longer sees the document on their dashboard, and verify the refusal is read from the rendered page
 - [ ] 7.3 Verify in the sharing spec that the third user opening the address directly is refused and that the document title never appears anywhere in the page they receive
-- [ ] 7.4 Extend the sharing spec for view-only access: the owner shares as view-only or lowers an existing share, and verify the recipient can read the document but an attempted edit is refused and the refusal is visible in the page **(conditional: stretch-features)**
+- [ ] 7.4 Adopt `tests/e2e/roles.spec.ts` from `stretch-features` rather than writing a second spec, and extend the sharing coverage for view-only access: the owner shares as view-only or lowers an existing share, and verify the recipient can read the document but an attempted edit is refused and the refusal is visible in the page **(conditional: stretch-features)**
 - [ ] 7.5 Write the editing spec: create, rename, type text, apply bold, italic, underline, heading one, heading two, a bulleted list and a numbered list, reload, and verify the title and every formatting survived by reading the rendered document
 - [ ] 7.6 Write the import spec for `.txt`, `.md` and `.docx`: each opens a new document carrying the file's text with the title taken from the file name, and verify the Markdown and Word headings and lists arrive as formatting rather than as plain text
 - [ ] 7.7 Extend the import spec to reject an unsupported extension and a file over 2MB, and verify each shows its message, creates no document, and sends no upload request

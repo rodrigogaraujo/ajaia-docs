@@ -352,3 +352,9 @@ Decisions by the lead, after ajaia-11's questions:
 - OK: live at https://ajaia-docs-rodrigo.netlify.app. Lead checked: /login 200 with Alice, Bob, Carol; /api/documents without cookie is 401 JSON, not a redirect. The proxy exclusion works in production.
 - OK: repo private at https://github.com/rodrigogaraujo/ajaia-docs. Builder pushed and added the URL to README.
 - OK: Drive folder rebuilt in ~/Downloads/ajaia-submission: zip without .env, docs, diagrams, import samples.
+
+## Archive and close
+
+- OK: lead verified the deploy from outside and ticked 13 tasks in quality-and-deploy with evidence: live /login 200, API 401 without cookie, Alice's cookie lists her docs, repo private, .env absent, .env.example present. 8 left unchecked, all stated.
+- OK: archived quality-and-deploy and stretch-features (export .md, done in main). Six archives. qa-e2e-coverage stays open as a proposed test plan, 0/65.
+- OK: SUBMISSION.md rewritten to the real final state: what works on the live URL, what is partial, the unmerged stretch branch, next steps.

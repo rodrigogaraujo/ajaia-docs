@@ -2,6 +2,7 @@
 
 Live: https://ajaia-docs-rodrigo.netlify.app
 Repository (private): https://github.com/rodrigogaraujo/ajaia-docs
+Video: see `VIDEO_URL.txt`
 
 ## Included
 
@@ -11,8 +12,7 @@ Repository (private): https://github.com/rodrigogaraujo/ajaia-docs
 - `docs/AI_WORKFLOW.md`: tools, where AI helped, what was changed or rejected, how it was verified.
 - `AI_LOG.md`: the running log, one line per decision.
 - `docs/import-samples/`: files to try the import (md, txt, docx, and a corrupt docx).
-- `openspec/`: five changes with proposals, specs, designs and tasks; four archived.
-- Walkthrough video: see `VIDEO_URL.txt`.
+- `openspec/`: six archived changes (`openspec/changes/archive/`), each with proposal, specs, design and tasks. One open change, `qa-e2e-coverage`, is a proposed test plan only: nothing of it is implemented.
 
 ## Test accounts
 
@@ -21,30 +21,38 @@ Sign-in is mocked. Pick a user on `/login`:
 - bob@ajaia.test
 - carol@ajaia.test
 
-Try: sign in as Alice, create a document, share it with Bob. Switch user to Bob and open "Shared with me". Switch to Carol and open the same URL: 403.
+Demo data is seeded: Alice owns three documents, two of them shared. Bob owns one, shared with Alice. Carol owns nothing.
 
-## What works
+Try: sign in as Alice, open "Quarterly plan", share it with Carol. Switch user to Carol: it appears under "Shared with me". Revoke it as Alice, and Carol gets 403 on the same URL.
+
+## What works, verified on the live URL
 
 - Create, rename, edit with bold, italic, underline, H1, H2, bullet and numbered lists, autosave, reopen.
-- Import `.txt`, `.md`, `.docx` up to 2MB into a new document, with headings and lists preserved.
-- Share by email, revoke, owner and shared badges, shared users can edit but not delete or share.
-- Delete, owner only, with confirm.
-- Persistence in Postgres. Access enforced on the server on every request.
-- Export the open document to Markdown (turndown, client-side).
-- 65 unit tests. One Playwright end-to-end test of the sharing path: written, never executed yet, because the build session could not reach the database. Run it with `npm run test:e2e` against `npm run dev`.
+- Import `.txt`, `.md`, `.docx` up to 2MB into a new document. Headings and lists preserved, deeper headings demoted, unsupported markup dropped.
+- Share by email, revoke, owner and shared badges. Shared users can edit but not delete or share.
+- Delete, owner only, with an inline confirm.
+- Export the open document to Markdown.
+- Persistence in Postgres. Access enforced on the server on every request. Unauthenticated API calls get 401 JSON.
+- Error pages: not found, application error with retry, root error.
+- 65 unit tests on the pure rules: access, validation, sanitizer, import conversion, Markdown export.
 
 ## What is partial
 
-- Error pages and the deploy were done under time pressure at the end. See `openspec/changes/quality-and-deploy/tasks.md` for exactly which checks were run. Unchecked means not verified.
-- No test at the route level for every error status. The rules behind them are unit tested and every status was verified over HTTP during development.
+- Two Playwright end-to-end specs exist (`tests/e2e/sharing.spec.ts`, `tests/e2e/export.spec.ts`) but never ran: the database pooler was not reachable from the build machines during the last hour. Run them with `npm run test:e2e` against `npm run dev` with a reachable database.
+- Two checks in `quality-and-deploy` stayed unverified and are marked unchecked: the root error boundary in a real failure, and the client-side file rejection after the bundle refactor.
+- No route-level tests for every error status. The rules behind them are unit tested and each status was verified over HTTP during development.
+- Lint is not clean: three pre-existing `react-hooks/set-state-in-effect` findings and one unused import.
+- Known bug: pressing Escape while renaming a document saves the edit instead of cancelling it.
 
 ## Cut on purpose
 
-Real auth, real-time editing, roles, comments, version history. Listed as non-goals from the start. See `openspec/changes/stretch-features/next-steps.md`.
+Real auth, real-time editing, roles, comments, version history. Listed as non-goals from the start.
+
+A branch `stretch-features` (not merged, not deployed) holds a first pass at viewer/editor roles and PDF export with an unmigrated schema. It is not part of the submission.
 
 ## Next 2 to 4 hours
 
-1. Viewer versus editor role on a share.
-2. Export to PDF.
-3. Version history from autosave snapshots.
-4. Comments, then a presence indicator.
+1. Run the two e2e specs in CI with a reachable database, and fix the Escape bug.
+2. Viewer versus editor role on a share (from the unmerged branch, with `db push`).
+3. Export to PDF.
+4. Version history from autosave snapshots, then comments.

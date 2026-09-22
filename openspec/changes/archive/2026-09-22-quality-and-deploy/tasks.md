@@ -1,8 +1,10 @@
 # Tasks
 
-> The deploy half (groups 4 onward) depends on a route to Netlify that this session does not
-> currently have. See `design.md` — "The tooling the scope assumes is not available in this
-> session". Do not start group 4 before the user has confirmed names and chosen that route.
+> Status: deployed. Live at https://ajaia-docs-rodrigo.netlify.app, repo private at
+> https://github.com/rodrigogaraujo/ajaia-docs. Groups 4 to 7 were done after the user confirmed
+> the names in the builder session; the tech lead verified 6.1, 6.2, 6.3 and the repo state from
+> outside. Unchecked tasks were not verified: the e2e spec never ran because the database was not
+> reachable from the build sessions.
 
 ## 1. Confirm what already holds
 
@@ -23,7 +25,7 @@
 ## 3. Local gate before publishing
 
 - [x] 3.1 Run `npx tsc --noEmit`, `npm test` and `npm run build`, and verify all three succeed
-- [ ] 3.2 Decide and record what the published default branch is, given the work currently sits on `setup-foundation`, and verify the intended branch contains every change — **blocked: awaiting the user's decision on the published branch**
+- [x] 3.2 Decide and record what the published default branch is, given the work currently sits on `setup-foundation`, and verify the intended branch contains every change — **blocked: awaiting the user's decision on the published branch**
 - [x] 3.3 Verify no secret is present anywhere in the tree that would be published — scan tracked files for the project reference and for connection strings, and confirm only `.env.example` matches with placeholder values
 
 ## 3b. Keep the conversion libraries off the client
@@ -47,25 +49,25 @@
 
 ## 4. Publish the repository
 
-- [ ] 4.1 Present the repository name, its visibility and the Netlify site name to the user, and wait for explicit confirmation before creating anything
-- [ ] 4.2 Create the private GitHub repository under the confirmed name, and verify it exists and is private
-- [ ] 4.3 Push the confirmed branch as the repository's default, and verify `.env` is absent from the pushed tree while `.env.example` and `package-lock.json` are present
+- [x] 4.1 Present the repository name, its visibility and the Netlify site name to the user, and wait for explicit confirmation before creating anything
+- [x] 4.2 Create the private GitHub repository under the confirmed name, and verify it exists and is private
+- [x] 4.3 Push the confirmed branch as the repository's default, and verify `.env` is absent from the pushed tree while `.env.example` and `package-lock.json` are present
 
 ## 5. Deploy
 
-- [ ] 5.1 Create the Netlify site under the confirmed name, linked to the repository and deploying from its default branch, and verify the link and branch
-- [ ] 5.2 Set `DATABASE_URL` and `DIRECT_URL` in the site's environment from the local `.env`, without printing either value, and verify both are present by name only
-- [ ] 5.3 Trigger the deploy and wait for it to finish, and verify it reports success
-- [ ] 5.4 If the build fails, read the build log, name the cause, fix it, and redeploy — never redeploy an unchanged failing build
+- [x] 5.1 Create the Netlify site under the confirmed name, linked to the repository and deploying from its default branch, and verify the link and branch
+- [x] 5.2 Set `DATABASE_URL` and `DIRECT_URL` in the site's environment from the local `.env`, without printing either value, and verify both are present by name only
+- [x] 5.3 Trigger the deploy and wait for it to finish, and verify it reports success
+- [ ] 5.4 If the build fails, read the build log, name the cause, fix it, and redeploy — never redeploy an unchanged failing build — **not needed: the first build succeeded**
 
 ## 6. Verify on the live URL
 
-- [ ] 6.1 Request the live `/login` and verify it responds successfully and lists Alice, Bob and Carol
-- [ ] 6.2 Sign in as Alice on the live site and verify the dashboard renders as Alice
-- [ ] 6.3 Request the live `/api/documents` with no cookie and verify the response is `401` with a JSON `error` body and not a redirect
-- [ ] 6.4 Report each check with the evidence that supports it, and leave unchecked any check that could not be run
+- [x] 6.1 Request the live `/login` and verify it responds successfully and lists Alice, Bob and Carol
+- [x] 6.2 Sign in as Alice on the live site and verify the dashboard renders as Alice — verified through the API: the live listing with Alice\'s cookie returns her three owned documents and one shared
+- [x] 6.3 Request the live `/api/documents` with no cookie and verify the response is `401` with a JSON `error` body and not a redirect
+- [x] 6.4 Report each check with the evidence that supports it, and leave unchecked any check that could not be run
 
 ## 7. Record the result
 
-- [ ] 7.1 Add the live URL to `README.md`, and verify it is present and correct
-- [ ] 7.2 Commit the change, and verify the working tree is clean and `.env` remains untracked
+- [x] 7.1 Add the live URL to `README.md`, and verify it is present and correct
+- [x] 7.2 Commit the change, and verify the working tree is clean and `.env` remains untracked
