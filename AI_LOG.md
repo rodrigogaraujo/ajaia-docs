@@ -344,3 +344,5 @@ Decisions by the lead, after ajaia-11's questions:
 - ? Local dev server hit Prisma P2024 pool timeout on the direct host. Restarted with connection_limit=3 and pool_timeout=30. Stable after.
 - OK: ajaia-f7 used the worktree. Main tree clean at 715f5bc. Roles and the rest live only on branch stretch-features.
 - ? ajaia-11 finished qa-e2e-coverage planning: 12 requirements, 65 tasks, no apply. Planning only, documents what a full test suite would guarantee.
+- ? ajaia-f7 edited main for about 90 seconds before moving to the worktree, then reverted 8 files. That was the 500 on the local app. Lead verified main after the revert: no diff in src, prisma or package.json, tsc clean, 65 tests, login 200.
+- OK: ajaia-11 marked its role tests conditional on the stretch branch merging. It did not touch config.yaml or the archived spec. Right.

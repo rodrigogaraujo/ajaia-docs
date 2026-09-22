@@ -1,0 +1,7 @@
+Ajaia Docs 0.1
+
+First release of the lightweight collaborative editor.
+
+Create, rename and edit documents with rich text.
+Share a document with a teammate by email.
+Import .txt, .md and .docx files.

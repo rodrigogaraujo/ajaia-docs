@@ -7,6 +7,7 @@
 - `docs/ARCHITECTURE.md`: stack, data model, request flow, workflow, with Mermaid diagrams (rendered in `docs/diagrams/`).
 - `docs/AI_WORKFLOW.md`: tools, where AI helped, what was changed or rejected, how it was verified.
 - `AI_LOG.md`: the running log, one line per decision.
+- `docs/import-samples/`: files to try the import (md, txt, docx, and a corrupt docx).
 - `openspec/`: five changes with proposals, specs, designs and tasks; four archived.
 - Walkthrough video: see `VIDEO_URL.txt`.
 
