@@ -1,7 +1,7 @@
 # Submission
 
 Live: https://ajaia-docs-rodrigo.netlify.app
-Repository (private): https://github.com/rodrigogaraujo/ajaia-docs
+Repository: https://github.com/rodrigogaraujo/ajaia-docs
 Video: see https://www.loom.com/share/c6bce72ddd584c3a8bb8344ebe52a9a9
 
 ## Included
